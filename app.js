@@ -39,6 +39,15 @@ const PRESENTER_LINES = {
     'quitBtn','presenterClosing','spotlightOverlay','confettiCanvas','trophyIcon'
   ].map(id=>[id,$('#'+id)]));
 
+async function signInAnonymous() {
+    if (firebase.auth().currentUser) {
+        return firebase.auth().currentUser;
+    }
+
+    const result = await firebase.auth().signInAnonymously();
+    return result.user;
+}
+  
   /* ─── UTILS ─── */
   function showView(id){ views.forEach(v=>els[v].classList.toggle('active',v===id)); }
   function toast(msg){ els.toast.textContent=msg; els.toast.classList.remove('hidden'); setTimeout(()=>els.toast.classList.add('hidden'),2200); }
@@ -53,14 +62,7 @@ const PRESENTER_LINES = {
   function loadLocal(){ try{ return JSON.parse(localStorage.getItem('buzzarena_session')||'null'); }catch{return null} }
   function clearLocal(){ localStorage.removeItem('buzzarena_session'); }
 
-  async function signInAnonymous() {
-    if (firebase.auth().currentUser) {
-        return firebase.auth().currentUser;
-    }
-
-    const result = await firebase.auth().signInAnonymously();
-    return result.user;
-}
+  
 
 
   
