@@ -53,6 +53,17 @@ const PRESENTER_LINES = {
   function loadLocal(){ try{ return JSON.parse(localStorage.getItem('buzzarena_session')||'null'); }catch{return null} }
   function clearLocal(){ localStorage.removeItem('buzzarena_session'); }
 
+  async function signInAnonymous() {
+    if (firebase.auth().currentUser) {
+        return firebase.auth().currentUser;
+    }
+
+    const result = await firebase.auth().signInAnonymously();
+    return result.user;
+}
+
+
+  
   /* ─── PRÉSENTATEUR VOCAL ─── */
   function getVoices(){ return window.speechSynthesis?.getVoices()||[]; }
   function pickVoice(gender){
@@ -159,11 +170,22 @@ const PRESENTER_LINES = {
 
   /* ─── BACKEND ─── */
   async function initBackend(){
-    if(!isFirebaseReady()){
-      state.localMode=true;
-      console.warn('Mode démonstration local : complétez firebase-config.js pour activer le multijoueur.');
-      return;
+
+    if(isFirebaseReady()){
+
+        firebase.initializeApp(FIREBASE_CONFIG);
+
+        await signInAnonymous();
+
+        state.db = firebase.database();
+
+    }else{
+
+        state.localMode = true;
+
     }
+
+}
     try{
       if(!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
       state.auth=firebase.auth();
@@ -583,7 +605,7 @@ const PRESENTER_LINES = {
   }
 
   /* ─── INIT ─── */
-  initBackend().then(async()=>{
+  await initBackend();.then(async()=>{
     // Charger préférences présentateur
     const savedPresenter = localStorage.getItem('buzzarena_presenter');
     if(savedPresenter){ state.presenterMode=savedPresenter; document.querySelector(`input[name="presenterMode"][value="${savedPresenter}"]`)?.click(); }
